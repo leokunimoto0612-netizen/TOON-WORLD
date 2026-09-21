@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOON WORLD - パーティーゲーム</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- PeerJS 通信ライブラリ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- ヘッダー -->
+        <header class="toon-header">
+            <h1>🎪 TOON WORLD</h1>
+            <div id="room-info" class="hidden">
+                ID: <span id="display-room-id">------</span>
+            </div>
+        </header>
+
+        <main>
+            <!-- 1. ロビー画面 -->
+            <section id="lobby-screen" class="card toon-card">
+                <h2>ルーム作成 / 参加</h2>
+                
+                <div class="input-group">
+                    <label for="player-name">プレイヤー名</label>
+                    <input type="text" id="player-name" placeholder="名前を入力（例: たろう）" value="たろう">
+                </div>
+
+                <div class="room-actions">
+                    <button id="create-room-btn" class="btn primary-btn">部屋を作る (ホスト)</button>
+                    <div class="divider">OR</div>
+                    <div class="join-box">
+                        <input type="text" id="room-id-input" placeholder="6桁の部屋ID">
+                        <button id="join-room-btn" class="btn secondary-btn">参加</button>
+                    </div>
+                </div>
+
+                <!-- 状態表示ログ -->
+                <p id="status-message" class="status-msg-box">名前を入力して「部屋を作る」を押してください</p>
+
+                <!-- メンバーリスト ＆ モード選択 -->
+                <div id="member-list-box" class="hidden">
+                    <h3>参加メンバー (<span id="member-count">0</span>名)</h3>
+                    <ul id="member-list" class="toon-badge-list"></ul>
+
+                    <!-- ホスト専用：ゲーム選択 -->
+                    <div id="host-settings" class="hidden">
+                        <h4>🎮 モード選択</h4>
+                        <div class="input-group">
+                            <select id="game-mode-select">
+                                <option value="quiz">⚡ コンビでみんはや</option>
+                                <option value="draw">🎨 お絵描き人狼</option>
+                                <option value="morning">☀️ 朝までそれ正解</option>
+                            </select>
+                        </div>
+
+                        <!-- みんはや用オプション設定 -->
+                        <div id="quiz-config-box" class="setting-grid">
+                            <label>勝利pt: <input type="number" id="win-score" value="50"></label>
+                            <label>正解pt: <input type="number" id="correct-score" value="10"></label>
+                            <label>誤答pt: <input type="number" id="penalty-score" value="10"></label>
+                            <label>交代: 
+                                <select id="role-mode">
+                                    <option value="auto">毎問交代</option>
+                                    <option value="fixed">固定</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button id="start-game-btn" class="btn start-btn hidden">ゲームスタート！</button>
+                </div>
+            </section>
+
+            <!-- 2. コンビクイズ：チーム確認画面 -->
+            <section id="team-screen" class="card toon-card hidden">
+                <h2>👥 チーム編成発表</h2>
+                <div id="team-list" class="team-container"></div>
+                <p id="solo-notice" class="notice hidden">※ 端数のため「1人チーム」が存在します（兼任）</p>
+                <button id="begin-round-btn" class="btn start-btn hidden">第1問を開始！</button>
+            </section>
+
+            <!-- 3-A. ⚡ コンビでみんはや 画面 -->
+            <section id="quiz-screen" class="card toon-card hidden">
+                <div class="game-header">
+                    <span id="quiz-round-display">第 1 問</span>
+                    <span id="quiz-genre-badge" class="badge">ジャンル</span>
+                    <span id="quiz-score-display">獲得: 0pt</span>
+                </div>
+
+                <div class="question-box">
+                    <p id="quiz-question-text">ここに問題文が流れます...</p>
+                </div>
+
+                <div id="quiz-role-display" class="role-status">役割: 読込中...</div>
+
+                <div id="quiz-action-panel">
+                    <!-- 押し手用 -->
+                    <div id="pusher-panel" class="hidden">
+                        <button id="push-btn" class="push-button">PUSH !</button>
+                    </div>
+
+                    <!-- 回答者用 -->
+                    <div id="answerer-panel" class="hidden">
+                        <p class="timer">残り時間: <span id="quiz-time-left">20</span> 秒</p>
+                        <div id="answer-input-area" class="input-group hidden">
+                            <input type="text" id="quiz-answer-input" placeholder="回答を入力...">
+                            <button id="submit-quiz-btn" class="btn primary-btn">回答送信</button>
+                        </div>
+                    </div>
+
+                    <!-- 待機用 -->
+                    <div id="quiz-waiting-panel" class="hidden">
+                        <p class="status-msg">他のプレイヤーが回答中または待機中...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3-B. 🎨 お絵描き人狼 画面 -->
+            <section id="draw-screen" class="card toon-card hidden">
+                <h2>🎨 お絵描き人狼</h2>
+                <div id="draw-theme-box" class="theme-card">
+                    お題: <strong id="my-draw-theme">読み込み中...</strong>
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="draw-canvas" width="320" height="280"></canvas>
+                </div>
+
+                <div class="canvas-tools">
+                    <input type="color" id="draw-color" value="#000000">
+                    <button id="clear-canvas-btn" class="btn secondary-btn" style="width: auto; padding: 6px 12px;">クリア</button>
+                </div>
+
+                <button id="finish-draw-btn" class="btn primary-btn hidden">描画終了 ➔ 話し合いへ</button>
+            </section>
+
+            <!-- 3-C. ☀️ 朝までそれ正解 画面 -->
+            <section id="morning-screen" class="card toon-card hidden">
+                <h2>☀️ 朝までそれ正解</h2>
+                <div class="morning-theme-card">
+                    <p class="theme-label">本日のお題</p>
+                    <h3 id="morning-theme-text">「〇」で始まる「〇〇〇」なものとは？</h3>
+                </div>
+
+                <div id="morning-input-box" class="input-group">
+                    <input type="text" id="morning-answer-input" placeholder="あなたの回答を入力">
+                    <button id="submit-morning-btn" class="btn primary-btn">回答を決定</button>
+                </div>
+
+                <div id="morning-board" class="hidden">
+                    <h3>🗣️ 全員の回答一覧</h3>
+                    <div id="morning-answers-list" class="answers-grid"></div>
+                </div>
+            </section>
+
+            <!-- 結果 ＆ 判定調整 ＆ ランキング（共通オーバーレイ） -->
+            <div id="result-overlay" class="overlay hidden">
+                <div class="result-card toon-card">
+                    <h2 id="result-title">結果発表</h2>
+                    <div id="correct-answer-text"></div>
+                    <div id="override-control-box"></div>
+                    <div id="ranking-table-box"></div>
+                    <button id="next-question-btn" class="btn primary-btn hidden" style="margin-top: 15px;">次へ進む ▶</button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

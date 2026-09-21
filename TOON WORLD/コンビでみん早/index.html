@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コンビでみん早 - TOON WORLD</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="../index.html" class="home-btn">🏠 ホームへ</a>
+            <h1>⚡ コンビでみん早 ⚡</h1>
+            <p class="subtitle">相棒を信じてボタンを押せ！新感覚ペア早押しクイズ</p>
+        </header>
+
+        <!-- 1. ロビー画面 -->
+        <div id="lobby-screen" class="card">
+            <div class="input-group">
+                <label>プレイヤー名</label>
+                <input type="text" id="player-name" placeholder="なまえを入力">
+            </div>
+
+            <div class="room-actions">
+                <button id="create-room-btn" class="btn btn-primary">部屋を作る（ホスト）</button>
+                <div class="divider">または</div>
+                <div class="join-group">
+                    <input type="text" id="room-id-input" placeholder="ルームIDを入力">
+                    <button id="join-room-btn" class="btn btn-secondary">参加する</button>
+                </div>
+            </div>
+
+            <div id="host-settings" class="settings-box hidden">
+                <h3>⚙️ ゲーム設定（ホスト専用）</h3>
+                
+                <div class="setting-item">
+                    <label>勝利に必要なポイント:</label>
+                    <select id="win-score">
+                        <option value="30">30 pt（サクッと）</option>
+                        <option value="50" selected>50 pt（標準）</option>
+                        <option value="70">70 pt（じっくり）</option>
+                        <option value="100">100 pt（ガッツリ）</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>正解ポイント:</label>
+                    <select id="correct-score">
+                        <option value="10" selected>+10 pt</option>
+                        <option value="20">+20 pt</option>
+                        <option value="30">+30 pt</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>誤答ペナルティ:</label>
+                    <select id="penalty-score">
+                        <option value="0">0 pt（ペナルティなし）</option>
+                        <option value="10" selected>-10 pt</option>
+                        <option value="20">-20 pt</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>1問あたりの解答権:</label>
+                    <select id="max-attempts">
+                        <option value="1" selected>1回（早い者勝ち）</option>
+                        <option value="2">2回まで</option>
+                        <option value="99">制限なし</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>単独1位ボーナス:</label>
+                    <select id="first-bonus">
+                        <option value="0">なし</option>
+                        <option value="10" selected>あり (+10pt)</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <label>役割（押し手/回答者）の交代:</label>
+                    <select id="role-mode">
+                        <option value="auto">1問ごとに自動交代</option>
+                        <option value="fixed">ずっと固定</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="room-info" class="hidden">
+                <p>ルームID: <strong id="display-room-id"></strong></p>
+                <p class="sub-text">※友達にこのIDを教えてね！</p>
+            </div>
+
+            <div id="member-list-box" class="hidden">
+                <h3>👥 参加メンバー (<span id="member-count">0</span>人)</h3>
+                <ul id="member-list"></ul>
+                <button id="start-game-btn" class="btn btn-success hidden">チームを決めてスタート！</button>
+            </div>
+        </div>
+
+        <!-- 2. チーム発表画面 -->
+        <div id="team-screen" class="card hidden">
+            <h2>🤝 チーム決定！</h2>
+            <div id="team-list" class="team-grid"></div>
+            <p id="solo-notice" class="notice hidden">💡 奇数のため、1名「押し手＆回答者 兼任モード」になります！</p>
+            <button id="begin-round-btn" class="btn btn-primary hidden">クイズスタート！</button>
+        </div>
+
+        <!-- 3. ゲーム画面 -->
+        <div id="game-screen" class="card hidden">
+            <div class="game-header">
+                <span id="round-display" class="badge">第 1 問</span>
+                <span id="role-display" class="badge badge-role">あなたの役割: --</span>
+                <span id="score-display" class="badge badge-score">獲得Pt: 0pt</span>
+            </div>
+
+            <div class="question-box">
+                <div id="genre-badge" class="genre">ジャンル</div>
+                <div id="question-text" class="question">問題がここに出題されます...</div>
+            </div>
+
+            <div id="pusher-panel" class="action-panel hidden">
+                <p class="role-desc">👁️ あなたは【押し手】です！<br>回答者が答えられそうなタイミングでボタンを押せ！</p>
+                <button id="push-btn" class="btn btn-push">ここだ！押す！！ ⚡</button>
+            </div>
+
+            <div id="answerer-panel" class="action-panel hidden">
+                <p class="role-desc">❓ あなたは【回答者】です！<br>相棒がボタンを押すのを待っています...</p>
+                <div id="answer-input-area" class="hidden">
+                    <div id="timer" class="timer-box">残り時間: <span id="time-left">20</span>秒</div>
+                    <input type="text" id="answer-input" placeholder="答えを入力...">
+                    <button id="submit-answer-btn" class="btn btn-success">送信！</button>
+                </div>
+            </div>
+
+            <div id="waiting-panel" class="action-panel hidden">
+                <p class="role-desc">👀 別のチームが回答中！祈ろう...！</p>
+            </div>
+
+            <div id="result-overlay" class="result-box hidden">
+                <h2 id="result-title">正解！</h2>
+                <p id="correct-answer-text">正解は: --</p>
+                <button id="next-question-btn" class="btn btn-primary hidden">次の問題へ ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

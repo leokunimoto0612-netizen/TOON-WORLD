@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>朝までそれ正解 - TOON WORLD</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <!-- ポータルへ戻るボタン -->
+    <div style="text-align: left; margin-bottom: 10px;">
+        <a href="../../index.html" class="home-btn">🏠 ホームへ戻る</a>
+    </div>
+
+    <header>
+        <h1>朝までそれ正解！</h1>
+        <p class="subtitle">お題にぴったりの回答を全員で出そう！</p>
+    </header>
+
+    <!-- 待機部屋画面 -->
+    <div id="setup-screen">
+        <div class="input-group">
+            <input type="text" id="player-name" placeholder="あなたの名前">
+        </div>
+        <button id="create-room-btn" class="btn btn-gold">部屋を作る（親）</button>
+        <div style="margin: 15px 0; color: #888;">または</div>
+        <div class="input-group">
+            <input type="text" id="join-room-id" placeholder="合言葉（ルームID）">
+        </div>
+        <button id="join-room-btn" class="btn">部屋に入る</button>
+    </div>
+
+    <!-- ロビー画面 -->
+    <div id="lobby-screen" class="hidden">
+        <div class="room-info">
+            合言葉: <span id="display-room-id" class="share-url">---</span>
+            <div id="judge-badge" class="judge-badge">現在の判定者: 確定中...</div>
+        </div>
+        <div class="scoreboard">
+            <h3>参加メンバー</h3>
+            <div id="player-list"></div>
+        </div>
+        <button id="start-game-btn" class="btn btn-gold hidden" style="margin-top: 15px;">ゲームを開始する</button>
+        <p id="waiting-msg" class="status">親がゲームを開始するのを待っています...</p>
+    </div>
+
+    <!-- ゲームプレイ画面 -->
+    <div id="game-screen" class="hidden">
+        <div class="odai-box" id="odai-display">お題を取得中...</div>
+
+        <!-- 判定者の場合：お題入力 -->
+        <div id="judge-odai-input" class="hidden">
+            <p>【判定者】今回のお題を入力してください：</p>
+            <input type="text" id="custom-odai" placeholder="例：「あ」で始まる一番おいしい食べ物は？">
+            <button id="send-odai-btn" class="btn btn-gold">出題する</button>
+        </div>
+
+        <!-- 回答者の場合：入力（タブ切り替え） -->
+        <div id="answer-input-box" class="hidden">
+            <div class="tab-buttons">
+                <button class="tab-btn active" id="tab-text-btn">テキストで回答</button>
+                <button class="tab-btn" id="tab-draw-btn">手描きで回答</button>
+            </div>
+
+            <div id="text-input-area">
+                <input type="text" id="answer-text-input" placeholder="回答を入力...">
+            </div>
+
+            <div id="draw-input-area" class="hidden">
+                <canvas id="draw-canvas" width="300" height="200"></canvas>
+                <div>
+                    <button id="clear-canvas-btn" class="btn-small">クリア</button>
+                </div>
+            </div>
+
+            <button id="submit-answer-btn" class="btn btn-gold" style="margin-top: 15px;">回答を送信</button>
+        </div>
+
+        <!-- 判定・結果発表エリア -->
+        <div id="answers-area" class="answers-grid hidden"></div>
+
+        <button id="next-round-btn" class="btn btn-gold hidden" style="margin-top: 20px;">次のラウンドへ</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お絵描き人狼 - TOON WORLD</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <!-- ポータルへ戻るボタン -->
+    <div style="text-align: left; margin-bottom: 10px;">
+        <a href="../../index.html" class="home-btn">🏠 ホームへ戻る</a>
+    </div>
+
+    <header>
+        <div class="logo">🎨 お絵描き人狼 🐺</div>
+        <p class="subtitle">1枚のキャンバスにみんなで描き足せ！人狼は誰だ！？</p>
+    </header>
+
+    <!-- 1. 待機部屋・設定画面 -->
+    <div id="setup-screen" class="panel">
+        <div class="input-group">
+            <label>プレイヤー名</label>
+            <input type="text" id="player-name" placeholder="なまえを入力">
+        </div>
+
+        <div class="btn-group">
+            <button id="create-room-btn" class="btn btn-yellow">部屋を作る（ホスト）</button>
+        </div>
+
+        <div class="divider">または</div>
+
+        <div class="input-group">
+            <label>合言葉（ルームID）</label>
+            <input type="text" id="join-room-id" placeholder="合言葉を入力">
+            <button id="join-room-btn" class="btn btn-black">部屋に入る</button>
+        </div>
+    </div>
+
+    <!-- 2. ルームロビー -->
+    <div id="lobby-screen" class="panel hidden">
+        <div class="room-card">
+            <span>合言葉: <strong id="display-room-id">---</strong></span>
+            <button id="copy-id-btn" class="btn-small" onclick="copyRoomId()">コピー</button>
+        </div>
+
+        <div id="host-settings" class="settings-box hidden">
+            <h3>⚙️ ルール設定（ホストのみ）</h3>
+            <div class="setting-item">
+                <label>人狼の設定:</label>
+                <select id="setting-wolf-mode">
+                    <option value="1">人狼1名（確実）</option>
+                    <option value="1-maybe0" selected>人狼1名（0人の可能性あり）</option>
+                    <option value="2">人狼2名（確実）</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>描画モード:</label>
+                <select id="setting-draw-mode">
+                    <option value="10" selected>1人10秒</option>
+                    <option value="15">1人15秒</option>
+                    <option value="5">1人5秒（激ムズ）</option>
+                    <option value="stroke">一筆（1ストローク）限定</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>周回数（ターン）:</label>
+                <select id="setting-rounds">
+                    <option value="1">1周（各1回）</option>
+                    <option value="2" selected>2周（各2回）</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>同期方式:</label>
+                <select id="setting-sync-type">
+                    <option value="realtime">リアルタイム（すぐ線が見える）</option>
+                    <option value="turn">ターン確定（交代時に反映）</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>人狼の逆転お題当て:</label>
+                <select id="setting-reversal">
+                    <option value="true">あり（当てたら人狼逆転）</option>
+                    <option value="false">なし</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="players-box">
+            <h3>👥 参加メンバー (<span id="player-count">1</span>名)</h3>
+            <ul id="player-list"></ul>
+        </div>
+
+        <button id="start-game-btn" class="btn btn-yellow hidden">ゲームスタート！</button>
+        <p id="waiting-msg" class="status-msg">ホストがゲームを開始するのを待っています...</p>
+    </div>
+
+    <!-- 3. お題選定フェーズ -->
+    <div id="odai-select-screen" class="panel hidden">
+        <h2>🎲 お題の決定</h2>
+        <p id="odai-wait-msg">誰かがお題を決めています...（制限時間30秒）</p>
+
+        <div id="odai-selector-box" class="hidden">
+            <p class="highlight-text">✨ あなたがお題決定係に選ばれました！ ✨</p>
+            <div class="timer-box">残り時間: <span id="odai-timer">30</span>秒</div>
+            
+            <p>以下から選ぶか、自分で入力してください：</p>
+            <div class="odai-options">
+                <button id="odai-opt-1" class="btn btn-black odai-choice-btn">お題1</button>
+                <button id="odai-opt-2" class="btn btn-black odai-choice-btn">お題2</button>
+                <button id="shuffle-odai-btn" class="btn-small">🔄 シャッフル</button>
+            </div>
+
+            <div class="input-group" style="margin-top:15px;">
+                <label>自由に入力する場合：</label>
+                <input type="text" id="custom-odai-input" placeholder="例：ドラえもん、サッカーボール">
+                <button id="submit-custom-odai-btn" class="btn btn-yellow" style="margin-top:5px;">このお題で決定！</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. ゲームメイン画面 -->
+    <div id="game-screen" class="panel hidden">
+        <div class="role-box">
+            <span id="role-badge" class="badge">確認中...</span>
+            <div id="odai-display" class="odai-text">お題: ❓❓❓</div>
+        </div>
+
+        <div class="turn-info">
+            <div id="turn-player">現在の描き手: <span>---</span></div>
+            <div id="timer-display" class="timer">10</div>
+        </div>
+
+        <div class="canvas-wrapper">
+            <canvas id="paint-canvas" width="400" height="400"></canvas>
+        </div>
+
+        <div id="canvas-tools" class="tools-box hidden">
+            <input type="color" id="color-picker" value="#000000">
+            <button id="clear-stroke-btn" class="btn-small" onclick="clearCanvas()">やり直す</button>
+            <button id="finish-turn-btn" class="btn btn-yellow">描き終わり！</button>
+        </div>
+    </div>
+
+    <!-- 5. 人狼投票タイム -->
+    <div id="vote-screen" class="panel hidden">
+        <h2>💬 ターン終了！人狼投票タイム</h2>
+        <p>全ターンが終了しました。話し合って人狼が誰か（または人狼がいないか）投票してください！</p>
+        <div id="vote-options" class="vote-grid"></div>
+        <p id="vote-status-msg" class="status-msg" style="margin-top:15px;"></p>
+    </div>
+
+    <!-- 6. 人狼逆転お題当てフェーズ -->
+    <div id="reversal-screen" class="panel hidden">
+        <h2>🐺 人狼の逆転タイム！</h2>
+        <p>人狼だとバレてしまいました！しかし、この絵のお題を当てられれば逆転勝利です！</p>
+        <input type="text" id="wolf-guess-input" placeholder="お題を入力...">
+        <button id="submit-guess-btn" class="btn btn-yellow" style="margin-top:10px;">回答する！</button>
+    </div>
+
+    <!-- 7. 結果発表画面 -->
+    <div id="result-screen" class="panel hidden">
+        <h2 id="result-title">結果発表</h2>
+        <div id="result-detail" class="result-box"></div>
+        <button id="back-to-lobby-btn" class="btn btn-yellow" style="margin-top:20px;">ロビーに戻る</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
