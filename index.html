@@ -19,7 +19,8 @@
       <h2>プレイヤー設定 & ルーム作成</h2>
       <div class="input-group">
         <label for="username">プレイヤー名</label>
-        <input type="text" id="username" placeholder="名前を入力（例: たろう）" maxlength="10">
+        <!-- 「太郎」の初期値を完全削除 -->
+        <input type="text" id="username" placeholder="プレイヤー名を入力..." maxlength="10">
       </div>
 
       <div class="room-controls">
@@ -40,33 +41,42 @@
       </div>
     </section>
 
-    <!-- ゲーム選択画面（カラフルなカード型デザイン） -->
+    <!-- カラフル＆巨大ボックス型のゲーム選択画面 -->
     <section id="game-select-section" class="card hidden">
       <h2>🎮 ゲームを選択</h2>
-      <p class="section-desc">遊ぶゲームを選んでください（ホストのみ選択可能）</p>
+      <p class="section-desc">遊ぶゲームをタップしてください（ホストが選択）</p>
       
       <div class="game-cards">
-        <div class="game-card card-minhaya" onclick="selectGame('minhaya')">
-          <div class="game-icon">⚡</div>
-          <div class="game-title">コンビでみん早</div>
-          <div class="game-desc">2人1組のペアで挑戦！協力＆スピード回答クイズゲーム</div>
-        </div>
-
-        <div class="game-card card-jinro" onclick="selectGame('jinro')">
-          <div class="game-icon">🎨</div>
-          <div class="game-title">お絵描き人狼</div>
-          <div class="game-desc">絵心と洞察力で勝負！1人だけお題を知らない人狼を探せ</div>
-        </div>
-
+        <!-- 朝までそれ正解 -->
         <div class="game-card card-seikai" onclick="selectGame('seikai')">
           <div class="game-icon">☀️</div>
-          <div class="game-title">朝までそれ正解</div>
-          <div class="game-desc">「『あ』で始まるかっこいいもの」みんなの納得の正解を導き出せ！</div>
+          <div class="game-details">
+            <div class="game-title">朝までそれ正解</div>
+            <div class="game-desc">「『あ』で始まるかっこいいもの」みんなの納得の正解を導き出せ！</div>
+          </div>
+        </div>
+
+        <!-- お絵描き人狼 -->
+        <div class="game-card card-jinro" onclick="selectGame('jinro')">
+          <div class="game-icon">🎨</div>
+          <div class="game-details">
+            <div class="game-title">お絵描き人狼</div>
+            <div class="game-desc">絵心と洞察力で勝負！1人だけお題を知らない人狼を探し出せ</div>
+          </div>
+        </div>
+
+        <!-- コンビでみん早 -->
+        <div class="game-card card-minhaya" onclick="selectGame('minhaya')">
+          <div class="game-icon">⚡</div>
+          <div class="game-details">
+            <div class="game-title">コンビでみん早</div>
+            <div class="game-desc">2人1組のペアで挑戦！協力＆スピード回答クイズゲーム</div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ゲーム画面（コンビでみん早） -->
+    <!-- コンビでみん早 画面 -->
     <section id="game-minhaya" class="game-area hidden">
       <div class="card">
         <h2>⚡ コンビでみん早</h2>
@@ -75,8 +85,8 @@
         </div>
 
         <div id="minhaya-quiz-box">
-          <div class="quiz-category" id="quiz-category">ジャンル: 一般知識</div>
-          <div class="quiz-question" id="quiz-question">問題を取得中...</div>
+          <div class="quiz-category" id="quiz-category">ジャンル: 読み込み中...</div>
+          <div class="quiz-question" id="quiz-question">外部からクイズを全自動取得中...</div>
           
           <div class="answer-box">
             <input type="text" id="minhaya-answer-input" placeholder="回答を入力してください">
@@ -84,39 +94,33 @@
           </div>
         </div>
 
-        <div id="minhaya-result-box" class="hidden">
-          <h3>📢 一斉オープン！回答結果</h3>
-          <div id="minhaya-answers-list"></div>
-          
-          <!-- ホスト専用手動判定エリア -->
-          <div id="host-override-panel" class="host-panel hidden">
-            <h4>👑 ホスト専用 採点パネル</h4>
-            <div id="host-score-controls"></div>
-          </div>
-
-          <button id="minhaya-next-btn" class="btn btn-primary hidden" onclick="nextMinhayaQuiz()">次の問題へ</button>
-        </div>
-
-        <!-- リアルタイム順位表 -->
-        <div class="ranking-section">
-          <h3>🏆 現在のスコアランキング</h3>
-          <div id="minhaya-ranking"></div>
-        </div>
+        <button class="btn btn-secondary back-btn" onclick="backToSelect()">← ゲーム選択に戻る</button>
       </div>
     </section>
 
-    <!-- 他のゲーム用の仮枠 -->
-    <section id="game-jinro" class="game-area hidden">
-      <div class="card">
-        <h2>🎨 お絵描き人狼</h2>
-        <p>準備中...（ゲーム選択画面に戻るにはページを再読み込みしてください）</p>
-      </div>
-    </section>
-
+    <!-- 朝までそれ正解 画面 -->
     <section id="game-seikai" class="game-area hidden">
       <div class="card">
         <h2>☀️ 朝までそれ正解</h2>
-        <p>準備中...（ゲーム選択画面に戻るにはページを再読み込みしてください）</p>
+        <div class="theme-box">
+          <div class="theme-title">本日のお題</div>
+          <div class="theme-content" id="seikai-theme">お題を自動生成中...</div>
+        </div>
+        <button class="btn btn-primary" onclick="generateSeikaiTheme()">🔄 次のお題を自動生成</button>
+        <button class="btn btn-secondary back-btn" onclick="backToSelect()">← ゲーム選択に戻る</button>
+      </div>
+    </section>
+
+    <!-- お絵描き人狼 画面 -->
+    <section id="game-jinro" class="game-area hidden">
+      <div class="card">
+        <h2>🎨 お絵描き人狼</h2>
+        <div class="theme-box">
+          <div class="theme-title">今回のお題（人狼には見えません）</div>
+          <div class="theme-content" id="jinro-theme">お題を自動取得中...</div>
+        </div>
+        <button class="btn btn-primary" onclick="generateJinroTheme()">🔄 次のお題を自動取得</button>
+        <button class="btn btn-secondary back-btn" onclick="backToSelect()">← ゲーム選択に戻る</button>
       </div>
     </section>
   </div>
