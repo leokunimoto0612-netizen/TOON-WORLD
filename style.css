@@ -1,285 +1,209 @@
-/* ポップなトゥーンワールド風スタイル */
-:root {
-    --bg-color: #fef08a;
-    --card-bg: #ffffff;
-    --main-color: #f59e0b;
-    --accent-blue: #38bdf8;
-    --push-btn-red: #ef4444;
-    --text-color: #1e293b;
-    --border-color: #000000;
-}
-
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    display: flex;
-    justify-content: center;
-    padding: 15px;
-    min-height: 100vh;
-}
-
-.app-container {
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+  }
+  
+  body {
+    background-color: #f4f7f6;
+    color: #333;
+    padding: 20px;
+  }
+  
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  header h1 {
+    font-size: 2.2rem;
+    color: #2c3e50;
+  }
+  
+  .subtitle {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+  }
+  
+  .card {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+  }
+  
+  .hidden {
+    display: none !important;
+  }
+  
+  .input-group {
+    margin-bottom: 15px;
+  }
+  
+  .input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  input[type="text"] {
     width: 100%;
-    max-width: 500px;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  
+  input[type="text"]:focus {
+    border-color: #3182ce;
+  }
+  
+  .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+    width: 100%;
+  }
+  
+  .btn:active {
+    transform: scale(0.98);
+  }
+  
+  .btn-primary { background-color: #3182ce; color: white; }
+  .btn-secondary { background-color: #4a5568; color: white; }
+  .btn-success { background-color: #38a169; color: white; }
+  
+  .room-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+  }
+  
+  .control-box {
+    background: #f7fafc;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  
+  .room-info {
+    margin-top: 15px;
+    padding: 15px;
+    background: #ebf8ff;
+    border-left: 4px solid #3182ce;
+    border-radius: 4px;
+  }
+  
+  /* カラフルゲーム選択カード */
+  .section-desc {
+    color: #718096;
+    margin-bottom: 20px;
+  }
+  
+  .game-cards {
     display: flex;
     flex-direction: column;
     gap: 15px;
-}
-
-.toon-header {
+  }
+  
+  .game-card {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 12px 18px;
-    background-color: var(--main-color);
-    border: 3px solid var(--border-color);
-    border-radius: 16px;
-    box-shadow: 4px 4px 0px var(--border-color);
-    color: #fff;
-}
-
-.toon-header h1 {
-    font-size: 1.3rem;
-    font-weight: 900;
-    text-shadow: 2px 2px 0px #000;
-}
-
-#room-info {
-    font-size: 0.9rem;
-    font-weight: bold;
-    background: #fff;
-    color: #000;
-    padding: 4px 10px;
-    border-radius: 12px;
-    border: 2px solid #000;
-}
-
-.toon-card {
-    background-color: var(--card-bg);
-    border-radius: 20px;
     padding: 20px;
-    border: 3px solid var(--border-color);
-    box-shadow: 5px 5px 0px var(--border-color);
-}
-
-.hidden {
-    display: none !important;
-}
-
-.input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 12px;
-}
-
-input[type="text"], input[type="number"], select {
-    width: 100%;
-    padding: 10px;
-    border-radius: 10px;
-    border: 2px solid var(--border-color);
-    font-size: 1rem;
-    font-weight: bold;
-    background: #f8fafc;
-}
-
-.btn {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid var(--border-color);
     border-radius: 12px;
-    font-weight: 900;
-    font-size: 1rem;
-    cursor: pointer;
-    box-shadow: 3px 3px 0px var(--border-color);
-    transition: transform 0.1s;
-}
-
-.btn:active {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0px var(--border-color);
-}
-
-.primary-btn { background-color: var(--accent-blue); color: #000; }
-.secondary-btn { background-color: #cbd5e1; color: #000; }
-.start-btn { background-color: #4ade80; color: #000; margin-top: 15px; }
-
-.divider {
-    text-align: center;
-    margin: 8px 0;
-    font-weight: 900;
-    color: #64748b;
-}
-
-.join-box { display: flex; gap: 8px; }
-
-.status-msg-box {
-    margin-top: 10px;
-    padding: 8px;
-    border-radius: 8px;
-    background: #f1f5f9;
-    border: 2px solid var(--border-color);
-    font-size: 0.85rem;
-    text-align: center;
-    font-weight: bold;
-}
-
-#member-list-box {
-    margin-top: 15px;
-    border-top: 2px dashed var(--border-color);
-    padding-top: 15px;
-}
-
-.toon-badge-list {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 10px 0;
-}
-
-.toon-badge-list li {
-    background: #fed7aa;
-    border: 2px solid #000;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-weight: bold;
-    font-size: 0.9rem;
-}
-
-.setting-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 8px;
-    font-size: 0.85rem;
-}
-
-.team-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin: 15px 0;
-}
-
-.team-card {
-    background: #e0f2fe;
-    border: 2px solid #000;
-    padding: 10px;
-    border-radius: 12px;
-    text-align: center;
-}
-
-.game-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    font-weight: bold;
-}
-
-.badge {
-    background-color: #a855f7;
-    color: #fff;
-    padding: 3px 10px;
-    border-radius: 12px;
-    border: 2px solid #000;
-}
-
-.question-box {
-    background-color: #f1f5f9;
-    border-radius: 12px;
-    padding: 15px;
-    min-height: 90px;
-    border: 2px solid #000;
-    font-size: 1.05rem;
-    font-weight: bold;
-    line-height: 1.5;
-    margin-bottom: 12px;
-}
-
-.role-status {
-    text-align: center;
-    font-weight: 900;
-    color: #d97706;
-    margin-bottom: 12px;
-}
-
-.push-button {
-    width: 100%;
-    height: 100px;
-    background-color: var(--push-btn-red);
     color: white;
-    font-size: 2.2rem;
-    font-weight: 900;
-    border: 3px solid #000;
-    border-radius: 50px;
-    box-shadow: 0 8px 0 #000;
     cursor: pointer;
-}
-
-.push-button:active {
-    box-shadow: 0 2px 0 #000;
-    transform: translateY(6px);
-}
-
-.timer {
-    text-align: center;
-    font-size: 1.2rem;
-    font-weight: 900;
-    color: #dc2626;
-    margin-bottom: 8px;
-}
-
-.theme-card, .morning-theme-card {
-    background: #fef08a;
-    border: 2px solid #000;
-    padding: 12px;
-    border-radius: 12px;
-    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .game-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+  }
+  
+  .card-minhaya {
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+  }
+  
+  .card-jinro {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+  }
+  
+  .card-seikai {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+  }
+  
+  .game-icon {
+    font-size: 2.5rem;
+    margin-right: 20px;
+  }
+  
+  .game-title {
+    font-size: 1.4rem;
     font-weight: bold;
-    margin-bottom: 12px;
-}
-
-.canvas-container {
-    display: flex;
-    justify-content: center;
-    background: #fff;
-    border-radius: 12px;
-    border: 2px solid #000;
-    overflow: hidden;
+  }
+  
+  .game-desc {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-top: 4px;
+  }
+  
+  /* タイマー＆クイズ */
+  .timer-box {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #e53e3e;
+    text-align: right;
     margin-bottom: 10px;
-}
-
-canvas { touch-action: none; cursor: crosshair; }
-.canvas-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-
-.answers-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-.answer-card { background: #f1f5f9; padding: 8px; border-radius: 8px; border: 2px solid #000; display: flex; justify-content: space-between; }
-
-.overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.7);
+  }
+  
+  .quiz-category {
+    display: inline-block;
+    background: #edf2f7;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: #4a5568;
+    margin-bottom: 8px;
+  }
+  
+  .quiz-question {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  
+  .answer-box {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    z-index: 100;
-}
-
-.result-card {
-    width: 100%;
-    max-width: 450px;
-    text-align: center;
-    max-height: 90vh;
-    overflow-y: auto;
-}
+    gap: 10px;
+  }
+  
+  .ranking-section {
+    margin-top: 30px;
+    border-top: 2px solid #edf2f7;
+    padding-top: 15px;
+  }
+  
+  .host-panel {
+    background: #fffaf0;
+    border: 1px solid #feebc8;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+  }
