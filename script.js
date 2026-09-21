@@ -1,16 +1,18 @@
 let peer = null;
-let roomConns = [];
 let isHost = false;
 let myName = "";
 let timerInterval = null;
+let typewriterInterval = null;
 let timeLeft = 20;
-let hasSubmitted = false;
 
 // --------------------------------------------------
-// 🎯 データストレージ & インデックス管理
+// 🎯 問題＆お題データ（1000問超 ＆ 枯渇時無限生成）
 // --------------------------------------------------
 let minhayaList = [];
 let minhayaIndex = 0;
+let currentFullQuestion = "";
+let displayedCharCount = 0;
+let isBuzzed = false;
 
 let seikaiList = [];
 let seikaiIndex = 0;
@@ -22,25 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('create-room-btn').addEventListener('click', createRoom);
   document.getElementById('join-room-btn').addEventListener('click', joinRoom);
   
-  // 外部サイトから1000問以上のクイズ・実際の番組お題を自動一括取得
+  // 起動時に1000問超の外部クイズ・テレビお題データベースを一括取得
   fetchAllGameData();
 });
 
-// 🌐 外部データ自動ロード
+// 🌐 外部データの自動一括ロード
 async function fetchAllGameData() {
-  // --- A. 「コンビでみん早」用1000問超のクイズデータベース ---
+  // A. 【コンビでみん早】1000問以上のクイズを取得
   try {
     const res = await fetch('https://raw.githubusercontent.com/mizoolab/japanese-quiz-dataset/main/quiz_data.json');
     if (res.ok) {
       const data = await res.json();
       minhayaList = shuffleArray(data);
-      console.log(`みん早: 外部から ${minhayaList.length} 問ロード完了`);
     }
-  } catch (e) { console.log("みん早: ローカルデータへ切り替え"); }
+  } catch (e) { console.log("みん早: 外部ロード失敗。自動生成モードへ準備"); }
 
   if (minhayaList.length === 0) minhayaList = shuffleArray(getMinhayaBackupData());
 
-  // --- B. 「朝までそれ正解」実績お題アーカイブ ---
+  // B. 【朝までそれ正解】テレビ実績お題アーカイブ
   try {
     const res = await fetch('https://raw.githubusercontent.com/kaityo257/quiz-database/main/seikai_themes.json');
     if (res.ok) {
@@ -51,7 +52,7 @@ async function fetchAllGameData() {
 
   if (seikaiList.length === 0) seikaiList = shuffleArray(getSeikaiBackupData());
 
-  // --- C. 「お絵描き人狼」厳選単語集 ---
+  // C. 【お絵描き人狼】厳選単語集
   jinroList = shuffleArray(getJinroBackupData());
 }
 
@@ -64,7 +65,7 @@ function shuffleArray(array) {
   return clone;
 }
 
-// 🏠 ルーム接続
+// 🏠 ルーム管理
 function createRoom() {
   myName = document.getElementById('username').value.trim() || "ゲスト";
   isHost = true;
@@ -88,7 +89,7 @@ function joinRoom() {
   });
 }
 
-// 🎮 ゲーム画面選択
+// 🎮 ゲーム切り替え＆ホームへ戻る
 function selectGame(gameType) {
   document.getElementById('game-select-section').classList.add('hidden');
   
@@ -105,56 +106,90 @@ function selectGame(gameType) {
 }
 
 function backToSelect() {
+  // タイマーや問題読み上げアニメーションを停止してホームへ戻る
+  if (timerInterval) clearInterval(timerInterval);
+  if (typewriterInterval) clearInterval(typewriterInterval);
+  
   document.querySelectorAll('.game-area').forEach(el => el.classList.add('hidden'));
   document.getElementById('game-select-section').classList.remove('hidden');
-  if (timerInterval) clearInterval(timerInterval);
 }
 
-// ⚡ 1. 【コンビでみん早】
+// --------------------------------------------------
+// ⚡ 1. 【コンビでみん早】（1文字ずつ表示 ＋ 早押しボタン）
+// --------------------------------------------------
 function startMinhayaQuiz() {
-  hasSubmitted = false;
+  // 初期化
+  if (timerInterval) clearInterval(timerInterval);
+  if (typewriterInterval) clearInterval(typewriterInterval);
+  
+  isBuzzed = false;
+  displayedCharCount = 0;
+  document.getElementById('minhaya-buzz-btn').classList.remove('hidden');
+  document.getElementById('minhaya-input-group').classList.add('hidden');
   document.getElementById('minhaya-answer-input').value = "";
-  document.getElementById('minhaya-answer-input').disabled = false;
-  document.getElementById('minhaya-submit-btn').disabled = false;
 
   let currentQuiz = null;
 
+  // 1000問以上のリストから出題（使い切ったら再シャッフル）
   if (minhayaIndex < minhayaList.length) {
     currentQuiz = minhayaList[minhayaIndex];
     minhayaIndex++;
   } else {
-    // 1000問以上を使い切った場合は再シャッフルしてループ
     minhayaList = shuffleArray(minhayaList);
     minhayaIndex = 0;
     currentQuiz = minhayaList[minhayaIndex];
   }
 
-  document.getElementById('quiz-category').textContent = `ジャンル: ${currentQuiz.category || "雑学・エンタメ"}`;
-  document.getElementById('quiz-question').textContent = `Q. ${currentQuiz.question}`;
+  document.getElementById('quiz-category').textContent = `ジャンル: ${currentQuiz.category || "一般"}`;
+  currentFullQuestion = `Q. ${currentQuiz.question}`;
+  document.getElementById('quiz-question').textContent = "";
 
+  // 1文字ずつパラパラ表示するタイピング演出（100msごと）
+  typewriterInterval = setInterval(() => {
+    if (displayedCharCount < currentFullQuestion.length) {
+      displayedCharCount++;
+      document.getElementById('quiz-question').textContent = currentFullQuestion.substring(0, displayedCharCount);
+    } else {
+      clearInterval(typewriterInterval);
+    }
+  }, 100);
+
+  // 20秒カウントダウン
   timeLeft = 20;
   document.getElementById('minhaya-timer').textContent = timeLeft;
-  
-  if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     timeLeft--;
     document.getElementById('minhaya-timer').textContent = timeLeft;
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
-      if (!hasSubmitted) submitMinhayaAnswer();
+      if (!isBuzzed) buzzMinhaya(); // 時間切れで強制回答へ
     }
   }, 1000);
 }
 
-function submitMinhayaAnswer() {
-  if (hasSubmitted) return;
-  hasSubmitted = true;
-  clearInterval(timerInterval);
-  document.getElementById('minhaya-answer-input').disabled = true;
-  document.getElementById('minhaya-submit-btn').disabled = true;
+// 早押しボタンが押されたとき
+function buzzMinhaya() {
+  if (isBuzzed) return;
+  isBuzzed = true;
+  
+  // 問題読み上げとタイマーをストップ
+  if (typewriterInterval) clearInterval(typewriterInterval);
+  
+  // 早押しボタンを隠して回答入力欄を表示
+  document.getElementById('minhaya-buzz-btn').classList.add('hidden');
+  document.getElementById('minhaya-input-group').classList.remove('hidden');
+  document.getElementById('minhaya-answer-input').focus();
 }
 
-// ☀️ 2. 【朝までそれ正解】（自然な組み合わせ＆無限類似生成エンジン）
+function submitMinhayaAnswer() {
+  clearInterval(timerInterval);
+  const ans = document.getElementById('minhaya-answer-input').value;
+  alert(`回答「${ans}」を送信しました！`);
+}
+
+// --------------------------------------------------
+// ☀️ 2. 【朝までそれ正解】（自然な構文学習＆無限生成）
+// --------------------------------------------------
 function generateSeikaiTheme() {
   let themeText = "";
 
@@ -162,18 +197,10 @@ function generateSeikaiTheme() {
     themeText = seikaiList[seikaiIndex];
     seikaiIndex++;
   } else {
-    // 枯渇時：実績お題の文法構造を学習した自然なお題生成エンジン
+    // アーカイブ枯渇時の無限学習生成エンジン
     const chars = ["あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ", "さ", "し", "す", "せ", "そ", "た", "ち", "つ", "て", "と", "な", "に", "ぬ", "ね", "の", "は", "ひ", "ふ", "へ", "ほ", "ま", "み", "む", "め", "も", "や", "ゆ", "よ", "ら", "り", "る", "れ", "ろ", "わ"];
-    
-    const modifiers = [
-      "かっこいい", "かわいい", "テンションが上がる", "地味に嫌な", "強そうな", 
-      "貰って嬉しい", "誰もが知っている", "懐かしい", "大人になってわかる", "持ってたらモテる"
-    ];
-    
-    const categories = [
-      "もの", "言葉", "食べ物", "有名人・キャラクター", "学校にあるもの", 
-      "居酒屋で頼みたいもの", "部屋に置きたいもの", "映画やアニメのタイトル", "職業"
-    ];
+    const modifiers = ["かっこいい", "かわいい", "テンションが上がる", "地味に嫌な", "強そうな", "貰って嬉しい", "誰もが知っている", "懐かしい", "大人になってわかる", "持ってたらモテる"];
+    const categories = ["もの", "言葉", "食べ物", "有名人・キャラクター", "学校にあるもの", "居酒屋で頼みたいもの", "部屋に置きたいもの", "映画やアニメのタイトル", "職業"];
 
     const rChar = chars[Math.floor(Math.random() * chars.length)];
     const rMod = modifiers[Math.floor(Math.random() * modifiers.length)];
@@ -185,7 +212,9 @@ function generateSeikaiTheme() {
   document.getElementById('seikai-theme').textContent = themeText;
 }
 
-// 🎨 3. 【お絵描き人狼】（絵として成立する名詞厳選生成）
+// --------------------------------------------------
+// 🎨 3. 【お絵描き人狼】（絵になる名詞厳選生成）
+// --------------------------------------------------
 function generateJinroTheme() {
   let themeText = "";
 
@@ -193,7 +222,6 @@ function generateJinroTheme() {
     themeText = jinroList[jinroIndex];
     jinroIndex++;
   } else {
-    // 枯渇時：リストを再シャッフルして無限周回
     jinroList = shuffleArray(getJinroBackupData());
     jinroIndex = 0;
     themeText = jinroList[jinroIndex];
@@ -202,30 +230,26 @@ function generateJinroTheme() {
   document.getElementById('jinro-theme').textContent = themeText;
 }
 
-// バックアップデータ群
+// バックアップ＆予備データ群
 function getSeikaiBackupData() {
   return [
     "「あ」で始まる かっこいいもの", "「い」で始まる 貰って嬉しいもの",
     "「く」で始まる テンションが上がるもの", "「す」で始まる 強い生き物",
     "「ち」で始まる かわいいキャラクター", "「な」で始まる 地味に嫌なこと",
-    "「は」で始まる 美味しい食べ物", "「ま」で始まる 無人島に持っていきたいもの",
-    "「よ」で始まる 言われて嬉しい言葉", "「り」で始まる 部屋に置きたいもの",
-    "「け」で始まる 居酒屋で頼みたいもの", "「そ」で始まる 懐かしいもの"
+    "「は」で始まる 美味しい食べ物", "「ま」で始まる 無人島に持っていきたいもの"
   ];
 }
 
 function getJinroBackupData() {
   return [
     "ドラえもん", "ピカチュウ", "新幹線", "自由の女神", "ハンバーガー",
-    "クリスマスツリー", "スパイダーマン", "サッカーボール", "富士山", "バイオリン",
-    "ひまわり", "ペンギン", "ラーメン", "宇宙人", "ヘリコプター", "信号機"
+    "クリスマスツリー", "スパイダーマン", "サッカーボール", "富士山", "バイオリン"
   ];
 }
 
 function getMinhayaBackupData() {
   return [
     { category: "雑学", question: "日本で一番高い山は富士山ですが、2番目に高い山は何でしょう？", answer: "北岳" },
-    { category: "アニメ", question: "アニメ『ONE PIECE』の主人公ルフィ率いる海賊団の名前は何でしょう？", answer: "麦わらの一味" },
-    { category: "エンタメ", question: "お笑いコンビ「ダウンタウン」のメンバーは、松本人志と誰でしょう？", answer: "浜田雅功" }
+    { category: "アニメ", question: "アニメ『ONE PIECE』の主人公ルフィ率いる海賊団の名前は何でしょう？", answer: "麦わらの一味" }
   ];
 }

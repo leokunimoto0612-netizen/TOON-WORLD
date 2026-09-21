@@ -5,46 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TOON WORLD - パーティーゲームボックス</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>🎈 TOON WORLD</h1>
-      <p class="subtitle">みんなで遊べるマルチパーティプラットフォーム</p>
+    <!-- ヘッダー -->
+    <header class="main-header">
+      <h1 class="logo">🎈 TOON WORLD 🎈</h1>
+      <p class="subtitle">みんなで遊べるポップなパーティーボックス！</p>
     </header>
 
-    <!-- プロフィール & ルーム作成/参加エリア -->
-    <section id="setup-section" class="card">
-      <h2>プレイヤー設定 & ルーム作成</h2>
+    <!-- セットアップ（プレイヤー設定・ルーム作成） -->
+    <section id="setup-section" class="pop-card setup-card">
+      <h2 class="card-title">🎮 プレイヤー設定</h2>
       <div class="input-group">
         <label for="username">プレイヤー名</label>
-        <!-- 「太郎」の初期値を完全削除 -->
-        <input type="text" id="username" placeholder="プレイヤー名を入力..." maxlength="10">
+        <!-- 「太郎」の初期値は削除済み -->
+        <input type="text" id="username" placeholder="なまえを入力してね！" maxlength="10">
       </div>
 
       <div class="room-controls">
-        <div class="control-box">
-          <h3>部屋を作る（ホスト）</h3>
-          <button id="create-room-btn" class="btn btn-primary">新しいルームを作成</button>
+        <div class="control-box host-box">
+          <h3>👑 部屋をつくる（ホスト）</h3>
+          <button id="create-room-btn" class="pop-btn btn-yellow">新しいルームを作成</button>
         </div>
-        <div class="control-box">
-          <h3>部屋に入る（ゲスト）</h3>
+        <div class="control-box guest-box">
+          <h3>👥 部屋にはいる（ゲスト）</h3>
           <input type="text" id="join-room-id" placeholder="ルームIDを入力">
-          <button id="join-room-btn" class="btn btn-secondary">ルームに参加</button>
+          <button id="join-room-btn" class="pop-btn btn-cyan">ルームに参加</button>
         </div>
       </div>
 
       <div id="room-info" class="room-info hidden">
         <p>あなたのルームID: <strong id="display-room-id">---</strong></p>
-        <p class="hint">このIDを友達に共有してください！</p>
+        <p class="hint">このIDを友達に教えてね！</p>
       </div>
     </section>
 
-    <!-- カラフル＆巨大ボックス型のゲーム選択画面 -->
-    <section id="game-select-section" class="card hidden">
-      <h2>🎮 ゲームを選択</h2>
-      <p class="section-desc">遊ぶゲームをタップしてください（ホストが選択）</p>
+    <!-- ゲーム選択画面（巨大でカラフルなポップカード） -->
+    <section id="game-select-section" class="pop-card hidden">
+      <h2 class="card-title">どのゲームであそぶ？</h2>
+      <p class="section-desc">遊ぶゲームのカードをタップしてね！（ホストが選択）</p>
       
       <div class="game-cards">
         <!-- 朝までそれ正解 -->
@@ -70,59 +72,72 @@
           <div class="game-icon">⚡</div>
           <div class="game-details">
             <div class="game-title">コンビでみん早</div>
-            <div class="game-desc">2人1組のペアで挑戦！協力＆スピード回答クイズゲーム</div>
+            <div class="game-desc">2人1組で挑戦！徐々に読まれる問題に早押しで回答だ！</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- コンビでみん早 画面 -->
-    <section id="game-minhaya" class="game-area hidden">
-      <div class="card">
-        <h2>⚡ コンビでみん早</h2>
-        <div class="timer-box">
-          残り時間: <span id="minhaya-timer">20</span> 秒
+    <!-- ☀️ 朝までそれ正解 画面 -->
+    <section id="game-seikai" class="game-area theme-seikai-bg hidden">
+      <div class="pop-card game-inner-card">
+        <button class="home-btn" onclick="backToSelect()">🏠 ホームに戻る</button>
+        <h2 class="game-header-title">☀️ 朝までそれ正解</h2>
+        
+        <div class="theme-display-box">
+          <div class="theme-label">✨ 本日のお題 ✨</div>
+          <div class="theme-text" id="seikai-theme">お題を準備中...</div>
         </div>
 
-        <div id="minhaya-quiz-box">
-          <div class="quiz-category" id="quiz-category">ジャンル: 読み込み中...</div>
-          <div class="quiz-question" id="quiz-question">外部からクイズを全自動取得中...</div>
+        <button class="pop-btn btn-orange btn-large" onclick="generateSeikaiTheme()">🔄 つぎのお題をだす</button>
+      </div>
+    </section>
+
+    <!-- 🎨 お絵描き人狼 画面 -->
+    <section id="game-jinro" class="game-area theme-jinro-bg hidden">
+      <div class="pop-card game-inner-card">
+        <button class="home-btn" onclick="backToSelect()">🏠 ホームに戻る</button>
+        <h2 class="game-header-title">🎨 お絵描き人狼</h2>
+        
+        <div class="theme-display-box jinro-display">
+          <div class="theme-label">🤫 今回のお題（人狼には見えません）</div>
+          <div class="theme-text" id="jinro-theme">お題を準備中...</div>
+        </div>
+
+        <button class="pop-btn btn-purple btn-large" onclick="generateJinroTheme()">🔄 つぎのお題をだす</button>
+      </div>
+    </section>
+
+    <!-- ⚡ コンビでみん早 画面 -->
+    <section id="game-minhaya" class="game-area theme-minhaya-bg hidden">
+      <div class="pop-card game-inner-card">
+        <button class="home-btn" onclick="backToSelect()">🏠 ホームに戻る</button>
+        <h2 class="game-header-title">⚡ コンビでみん早</h2>
+        
+        <div class="quiz-status-bar">
+          <div class="quiz-cat-tag" id="quiz-category">ジャンル: 読み込み中</div>
+          <div class="quiz-timer-badge">⏱️ 残り <span id="minhaya-timer">20</span> 秒</div>
+        </div>
+
+        <!-- 1文字ずつ文字が表示されるリアル問題欄 -->
+        <div class="quiz-display-box">
+          <div class="quiz-typewriter-text" id="quiz-question">準備中...</div>
+        </div>
+
+        <!-- 早押し＆回答エリア -->
+        <div class="quiz-action-area">
+          <button id="minhaya-buzz-btn" class="pop-btn btn-buzz" onclick="buzzMinhaya()">🔴 押して回答する！（早押し）</button>
           
-          <div class="answer-box">
-            <input type="text" id="minhaya-answer-input" placeholder="回答を入力してください">
-            <button id="minhaya-submit-btn" class="btn btn-success" onclick="submitMinhayaAnswer()">回答を送信</button>
+          <div id="minhaya-input-group" class="answer-input-box hidden">
+            <input type="text" id="minhaya-answer-input" placeholder="こたえを入力...">
+            <button id="minhaya-submit-btn" class="pop-btn btn-green" onclick="submitMinhayaAnswer()">送信</button>
           </div>
         </div>
 
-        <button class="btn btn-secondary back-btn" onclick="backToSelect()">← ゲーム選択に戻る</button>
+        <button class="pop-btn btn-cyan btn-large" style="margin-top: 15px;" onclick="startMinhayaQuiz()">▶ 次の問題へ</button>
       </div>
     </section>
 
-    <!-- 朝までそれ正解 画面 -->
-    <section id="game-seikai" class="game-area hidden">
-      <div class="card">
-        <h2>☀️ 朝までそれ正解</h2>
-        <div class="theme-box">
-          <div class="theme-title">本日のお題</div>
-          <div class="theme-content" id="seikai-theme">お題を自動生成中...</div>
-        </div>
-        <button class="btn btn-primary" onclick="generateSeikaiTheme()">🔄 次のお題を自動生成</button>
-        <button class="btn btn-secondary back-btn" onclick="backToSelect()">← ゲーム選択に戻る</button>
-      </div>
-    </section>
-
-    <!-- お絵描き人狼 画面 -->
-    <section id="game-jinro" class="game-area hidden">
-      <div class="card">
-        <h2>🎨 お絵描き人狼</h2>
-        <div class="theme-box">
-          <div class="theme-title">今回のお題（人狼には見えません）</div>
-          <div class="theme-content" id="jinro-theme">お題を自動取得中...</div>
-        </div>
-        <button class="btn btn-primary" onclick="generateJinroTheme()">🔄 次のお題を自動取得</button>
-        <button class="btn btn-secondary back-btn" onclick="backToSelect()">← ゲーム選択に戻る</button>
-      </div>
-    </section>
   </div>
 
   <script src="script.js"></script>
